@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Colliding Engines</title>
+  <title>Colliding Engines with Gravity</title>
   <style>
     body {
       margin: 0;
@@ -15,9 +15,9 @@
   </style>
 </head>
 <body>
-  <canvas id="collisionCanvas"></canvas>
+  <canvas id="gravityCanvas"></canvas>
   <script>
-    const canvas = document.getElementById('collisionCanvas');
+    const canvas = document.getElementById('gravityCanvas');
     const ctx = canvas.getContext('2d');
     const width = window.innerWidth;
     const height = window.innerHeight;
@@ -26,6 +26,7 @@
 
     const particleCount = 10;
     const particles = [];
+    const gravity = 0.1; // Adjust gravity strength
 
     class Particle {
       constructor(x, y, radius, color, velocity) {
@@ -48,6 +49,9 @@
         this.draw();
         this.x += this.velocity.x;
         this.y += this.velocity.y;
+
+        // Apply gravity
+        this.velocity.y += gravity;
 
         // Bounce off the walls
         if (this.x - this.radius < 0 || this.x + this.radius > width) {
