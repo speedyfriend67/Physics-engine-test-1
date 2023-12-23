@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Colliding Engines with Gravity, Connecting Lines, and Debug</title>
+  <title>Colliding Engines with Customizable Settings</title>
   <style>
     body {
       margin: 0;
@@ -27,19 +27,20 @@
   </style>
 </head>
 <body>
-  <canvas id="debugCanvas"></canvas>
+  <canvas id="customSettingsCanvas"></canvas>
   <button id="debugButton">Toggle Debug</button>
   <script>
-    const canvas = document.getElementById('debugCanvas');
+    const canvas = document.getElementById('customSettingsCanvas');
     const ctx = canvas.getContext('2d');
     const width = window.innerWidth;
     const height = window.innerHeight;
     canvas.width = width;
     canvas.height = height;
 
-    const particleCount = 10;
-    const particles = [];
-    const gravity = 0.1; // Adjust gravity strength
+    let particleCount = 10;
+    let particles = [];
+    let gravity = 0.1;
+    let velocityRange = 4;
     let debugMode = false;
 
     class Particle {
@@ -156,25 +157,35 @@
       });
     }
 
-    document.getElementById('debugButton').addEventListener('click', () => {
-      debugMode = !debugMode;
-    });
+    function resetParticles() {
+      particles = [];
+      for (let i = 0; i < particleCount; i++) {
+        const radius = Math.random() * 20 + 10;
+        const x = Math.random() * (width - 2 * radius) + radius;
+        const y = Math.random() * (height - 2 * radius) + radius;
+        const color = `rgba(${Math.random() * 255}, ${Math.random() * 255}, ${Math.random() * 255}, 1)`;
+        const velocity = {
+          x: Math.random() * velocityRange - velocityRange / 2,
+          y: Math.random() * velocityRange - velocityRange / 2,
+        };
 
-    // Create particles
-    for (let i = 0; i < particleCount; i++) {
-      const radius = Math.random() * 20 + 10;
-      const x = Math.random() * (width - 2 * radius) + radius;
-      const y = Math.random() * (height - 2 * radius) + radius;
-      const color = `rgba(${Math.random() * 255}, ${Math.random() * 255}, ${Math.random() * 255}, 1)`;
-      const velocity = {
-        x: Math.random() * 4 - 2, // random x velocity between -2 and 2
-        y: Math.random() * 4 - 2, // random y velocity between -2 and 2
-      };
-
-      particles.push(new Particle(x, y, radius, color, velocity));
+        particles.push(new Particle(x, y, radius, color, velocity));
+      }
     }
 
-    animate();
+    document.getElementById('debugButton').addEventListener('click', () => {
+      debugMode = !debugMode;
+      if (debugMode) {
+        gravity = parseFloat(prompt('Enter gravity strength:', gravity));
+        particleCount = parseInt(prompt(‘Enter particle count:’, particleCount));
+velocityRange = parseFloat(prompt(‘Enter velocity range:’, velocityRange));
+resetParticles();
+}
+});
+
+resetParticles();
+animate();
+
   </script>
 </body>
 </html>
