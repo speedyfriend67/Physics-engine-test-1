@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Pixel Wave Effect</title>
+  <title>Colliding Engines</title>
   <style>
     body {
       margin: 0;
@@ -15,46 +15,104 @@
   </style>
 </head>
 <body>
-  <canvas id="waveCanvas"></canvas>
+  <canvas id="collisionCanvas"></canvas>
   <script>
-    const canvas = document.getElementById('waveCanvas');
+    const canvas = document.getElementById('collisionCanvas');
     const ctx = canvas.getContext('2d');
     const width = window.innerWidth;
     const height = window.innerHeight;
     canvas.width = width;
     canvas.height = height;
 
-    const pixelSize = 4;
-    const columns = Math.floor(width / pixelSize);
-    const rows = Math.floor(height / pixelSize);
-    const waveFrequency = 0.05;
+    const particleCount = 10;
+    const particles = [];
+
+    class Particle {
+      constructor(x, y, radius, color, velocity) {
+        this.x = x;
+        this.y = y;
+        this.radius = radius;
+        this.color = color;
+        this.velocity = velocity;
+      }
+
+      draw() {
+        ctx.beginPath();
+        ctx.arc(this.x, this.y, this.radius, 0, Math.PI * 2);
+        ctx.fillStyle = this.color;
+        ctx.fill();
+        ctx.stroke();
+      }
+
+      update() {
+        this.draw();
+        this.x += this.velocity.x;
+        this.y += this.velocity.y;
+
+        // Bounce off the walls
+        if (this.x - this.radius < 0 || this.x + this.radius > width) {
+          this.velocity.x *= -1;
+        }
+
+        if (this.y - this.radius < 0 || this.y + this.radius > height) {
+          this.velocity.y *= -1;
+        }
+
+        // Collision detection and response between particles
+        particles.forEach(particle => {
+          if (particle !== this) {
+            const distance = Math.sqrt((this.x - particle.x) ** 2 + (this.y - particle.y) ** 2);
+            const sumRadius = this.radius + particle.radius;
+
+            if (distance < sumRadius) {
+              // Collision response
+              const angle = Math.atan2(particle.y - this.y, particle.x - this.x);
+              const overlap = sumRadius - distance;
+              const offsetX = (overlap / 2) * Math.cos(angle);
+              const offsetY = (overlap / 2) * Math.sin(angle);
+
+              this.x -= offsetX;
+              this.y -= offsetY;
+              particle.x += offsetX;
+              particle.y += offsetY;
+
+              // Adjust velocities for realistic bouncing effect
+              const angleNormal = angle + Math.PI / 2;
+              const thisSpeed = Math.sqrt(this.velocity.x ** 2 + this.velocity.y ** 2);
+              const particleSpeed = Math.sqrt(particle.velocity.x ** 2 + particle.velocity.y ** 2);
+
+              this.velocity.x = thisSpeed * Math.cos(angleNormal);
+              this.velocity.y = thisSpeed * Math.sin(angleNormal);
+
+              particle.velocity.x = particleSpeed * Math.cos(angleNormal + Math.PI);
+              particle.velocity.y = particleSpeed * Math.sin(angleNormal + Math.PI);
+            }
+          }
+        });
+      }
+    }
 
     function animate() {
       requestAnimationFrame(animate);
-      drawWave();
+      ctx.clearRect(0, 0, width, height);
+
+      particles.forEach(particle => {
+        particle.update();
+      });
     }
 
-    function drawWave() {
-      const pixels = ctx.getImageData(0, 0, width, height);
+    // Create particles
+    for (let i = 0; i < particleCount; i++) {
+      const radius = Math.random() * 20 + 10;
+      const x = Math.random() * (width - 2 * radius) + radius;
+      const y = Math.random() * (height - 2 * radius) + radius;
+      const color = `rgba(${Math.random() * 255}, ${Math.random() * 255}, ${Math.random() * 255}, 1)`;
+      const velocity = {
+        x: Math.random() * 4 - 2, // random x velocity between -2 and 2
+        y: Math.random() * 4 - 2, // random y velocity between -2 and 2
+      };
 
-      for (let y = 0; y < rows; y++) {
-        for (let x = 0; x < columns; x++) {
-          const pixelIndex = (y * columns + x) * pixelSize;
-
-          const waveHeight = Math.sin(x * waveFrequency) * 50; // Adjust amplitude and frequency as needed
-
-          // Apply wave effect to pixel color
-          const red = pixels.data[pixelIndex];
-          const green = pixels.data[pixelIndex + 1];
-          const blue = pixels.data[pixelIndex + 2];
-
-          pixels.data[pixelIndex] = red + waveHeight;
-          pixels.data[pixelIndex + 1] = green + waveHeight;
-          pixels.data[pixelIndex + 2] = blue + waveHeight;
-        }
-      }
-
-      ctx.putImageData(pixels, 0, 0);
+      particles.push(new Particle(x, y, radius, color, velocity));
     }
 
     animate();
