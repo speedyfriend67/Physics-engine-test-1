@@ -1,0 +1,93 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Simple Physics Engine</title>
+  <style>
+    body {
+      margin: 0;
+      overflow: hidden;
+    }
+    canvas {
+      display: block;
+    }
+  </style>
+</head>
+<body>
+  <canvas id="physicsCanvas"></canvas>
+  <script>
+    const canvas = document.getElementById('physicsCanvas');
+    const ctx = canvas.getContext('2d');
+    const particles = [];
+
+    canvas.width = window.innerWidth;
+    canvas.height = window.innerHeight;
+
+    class Particle {
+      constructor(x, y, radius, color, velocity) {
+        this.x = x;
+        this.y = y;
+        this.radius = radius;
+        this.color = color;
+        this.velocity = velocity;
+      }
+
+      draw() {
+        ctx.beginPath();
+        ctx.arc(this.x, this.y, this.radius, 0, Math.PI * 2);
+        ctx.fillStyle = this.color;
+        ctx.fill();
+        ctx.stroke();
+      }
+
+      update() {
+        this.draw();
+        this.x += this.velocity.x;
+        this.y += this.velocity.y;
+
+        // Apply gravity
+        if (this.y + this.radius < canvas.height) {
+          this.velocity.y += 0.5; // gravity force
+        } else {
+          this.velocity.y *= -0.6; // reverse velocity on collision with ground
+        }
+
+        // Bounce off the walls
+        if (this.x - this.radius < 0 || this.x + this.radius > canvas.width) {
+          this.velocity.x *= -1;
+        }
+
+        // Add friction
+        this.velocity.x *= 0.99;
+        this.velocity.y *= 0.99;
+      }
+    }
+
+    function animate() {
+      requestAnimationFrame(animate);
+      ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+      particles.forEach(particle => {
+        particle.update();
+      });
+    }
+
+    // Create particles
+    for (let i = 0; i < 10; i++) {
+      const radius = Math.random() * 20 + 10;
+      const x = Math.random() * (canvas.width - 2 * radius) + radius;
+      const y = Math.random() * (canvas.height - 2 * radius) + radius;
+      const color = `rgba(${Math.random() * 255}, ${Math.random() * 255}, ${Math.random() * 255}, 1)`;
+      const velocity = {
+        x: Math.random() * 4 - 2, // random x velocity between -2 and 2
+        y: Math.random() * 4 - 2, // random y velocity between -2 and 2
+      };
+
+      particles.push(new Particle(x, y, radius, color, velocity));
+    }
+
+    animate();
+  </script>
+</body>
+</html>
