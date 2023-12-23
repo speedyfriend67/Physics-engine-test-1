@@ -176,16 +176,21 @@
     document.getElementById('debugButton').addEventListener('click', () => {
       debugMode = !debugMode;
       if (debugMode) {
-        gravity = parseFloat(prompt('Enter gravity strength:', gravity));
-        particleCount = parseInt(prompt(‘Enter particle count:’, particleCount));
-velocityRange = parseFloat(prompt(‘Enter velocity range:’, velocityRange));
-resetParticles();
-}
-});
+        let gravityInput = prompt('Enter gravity strength:', gravity);
+        gravity = isNaN(parseFloat(gravityInput)) ? gravity : parseFloat(gravityInput);
 
-resetParticles();
-animate();
+        let particleCountInput = prompt('Enter particle count:', particleCount);
+        particleCount = isNaN(parseInt(particleCountInput)) ? particleCount : parseInt(particleCountInput);
 
+        let velocityRangeInput = prompt('Enter velocity range:', velocityRange);
+        velocityRange = isNaN(parseFloat(velocityRangeInput)) ? velocityRange : parseFloat(velocityRangeInput);
+
+        resetParticles();
+      }
+    });
+
+    resetParticles();
+    animate();
   </script>
 </body>
 </html>
