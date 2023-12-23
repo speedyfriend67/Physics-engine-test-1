@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Colliding Engines with Gravity and Connecting Lines</title>
+  <title>Colliding Engines with Gravity, Connecting Lines, and Directions</title>
   <style>
     body {
       margin: 0;
@@ -15,9 +15,9 @@
   </style>
 </head>
 <body>
-  <canvas id="lineCanvas"></canvas>
+  <canvas id="directionCanvas"></canvas>
   <script>
-    const canvas = document.getElementById('lineCanvas');
+    const canvas = document.getElementById('directionCanvas');
     const ctx = canvas.getContext('2d');
     const width = window.innerWidth;
     const height = window.innerHeight;
@@ -38,11 +38,28 @@
       }
 
       draw() {
+        // Draw particle
         ctx.beginPath();
         ctx.arc(this.x, this.y, this.radius, 0, Math.PI * 2);
         ctx.fillStyle = this.color;
         ctx.fill();
         ctx.stroke();
+
+        // Draw direction indicator
+        const direction = Math.atan2(this.velocity.y, this.velocity.x);
+        const indicatorX = this.x + this.radius * Math.cos(direction);
+        const indicatorY = this.y + this.radius * Math.sin(direction);
+        ctx.beginPath();
+        ctx.moveTo(this.x, this.y);
+        ctx.lineTo(indicatorX, indicatorY);
+        ctx.strokeStyle = 'black';
+        ctx.stroke();
+
+        // Display direction in degrees
+        const degrees = (direction * 180) / Math.PI;
+        ctx.font = '10px Arial';
+        ctx.fillStyle = 'black';
+        ctx.fillText(`${degrees.toFixed(0)}°`, this.x + this.radius + 5, this.y - this.radius);
       }
 
       update() {
