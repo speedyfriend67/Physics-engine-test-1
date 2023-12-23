@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Colliding Engines with Gravity, Connecting Lines, and Directions</title>
+  <title>Colliding Engines with Gravity, Connecting Lines, and Debug</title>
   <style>
     body {
       margin: 0;
@@ -12,12 +12,25 @@
     canvas {
       display: block;
     }
+    #debugButton {
+      position: fixed;
+      top: 10px;
+      left: 10px;
+      padding: 10px;
+      background-color: #4caf50;
+      color: white;
+      border: none;
+      border-radius: 5px;
+      cursor: pointer;
+      font-size: 16px;
+    }
   </style>
 </head>
 <body>
-  <canvas id="directionCanvas"></canvas>
+  <canvas id="debugCanvas"></canvas>
+  <button id="debugButton">Toggle Debug</button>
   <script>
-    const canvas = document.getElementById('directionCanvas');
+    const canvas = document.getElementById('debugCanvas');
     const ctx = canvas.getContext('2d');
     const width = window.innerWidth;
     const height = window.innerHeight;
@@ -27,6 +40,7 @@
     const particleCount = 10;
     const particles = [];
     const gravity = 0.1; // Adjust gravity strength
+    let debugMode = false;
 
     class Particle {
       constructor(x, y, radius, color, velocity) {
@@ -56,10 +70,14 @@
         ctx.stroke();
 
         // Display direction in degrees
-        const degrees = (direction * 180) / Math.PI;
-        ctx.font = '10px Arial';
-        ctx.fillStyle = 'black';
-        ctx.fillText(`${degrees.toFixed(0)}°`, this.x + this.radius + 5, this.y - this.radius);
+        if (debugMode) {
+          const degrees = (direction * 180) / Math.PI;
+          ctx.font = '10px Arial';
+          ctx.fillStyle = 'black';
+          ctx.fillText(`${degrees.toFixed(0)}°`, this.x + this.radius + 5, this.y - this.radius);
+          ctx.fillText(`X: ${this.velocity.x.toFixed(2)}`, this.x + this.radius + 5, this.y - this.radius - 15);
+          ctx.fillText(`Y: ${this.velocity.y.toFixed(2)}`, this.x + this.radius + 5, this.y - this.radius - 30);
+        }
       }
 
       update() {
@@ -137,6 +155,10 @@
         particle.update();
       });
     }
+
+    document.getElementById('debugButton').addEventListener('click', () => {
+      debugMode = !debugMode;
+    });
 
     // Create particles
     for (let i = 0; i < particleCount; i++) {
