@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Simple Physics Engine</title>
+  <title>Pixel Wave Effect</title>
   <style>
     body {
       margin: 0;
@@ -15,76 +15,46 @@
   </style>
 </head>
 <body>
-  <canvas id="physicsCanvas"></canvas>
+  <canvas id="waveCanvas"></canvas>
   <script>
-    const canvas = document.getElementById('physicsCanvas');
+    const canvas = document.getElementById('waveCanvas');
     const ctx = canvas.getContext('2d');
-    const particles = [];
+    const width = window.innerWidth;
+    const height = window.innerHeight;
+    canvas.width = width;
+    canvas.height = height;
 
-    canvas.width = window.innerWidth;
-    canvas.height = window.innerHeight;
-
-    class Particle {
-      constructor(x, y, radius, color, velocity) {
-        this.x = x;
-        this.y = y;
-        this.radius = radius;
-        this.color = color;
-        this.velocity = velocity;
-      }
-
-      draw() {
-        ctx.beginPath();
-        ctx.arc(this.x, this.y, this.radius, 0, Math.PI * 2);
-        ctx.fillStyle = this.color;
-        ctx.fill();
-        ctx.stroke();
-      }
-
-      update() {
-        this.draw();
-        this.x += this.velocity.x;
-        this.y += this.velocity.y;
-
-        // Apply gravity
-        if (this.y + this.radius < canvas.height) {
-          this.velocity.y += 0.5; // gravity force
-        } else {
-          this.velocity.y *= -0.6; // reverse velocity on collision with ground
-        }
-
-        // Bounce off the walls
-        if (this.x - this.radius < 0 || this.x + this.radius > canvas.width) {
-          this.velocity.x *= -1;
-        }
-
-        // Add friction
-        this.velocity.x *= 0.99;
-        this.velocity.y *= 0.99;
-      }
-    }
+    const pixelSize = 4;
+    const columns = Math.floor(width / pixelSize);
+    const rows = Math.floor(height / pixelSize);
+    const waveFrequency = 0.05;
 
     function animate() {
       requestAnimationFrame(animate);
-      ctx.clearRect(0, 0, canvas.width, canvas.height);
-
-      particles.forEach(particle => {
-        particle.update();
-      });
+      drawWave();
     }
 
-    // Create particles
-    for (let i = 0; i < 10; i++) {
-      const radius = Math.random() * 20 + 10;
-      const x = Math.random() * (canvas.width - 2 * radius) + radius;
-      const y = Math.random() * (canvas.height - 2 * radius) + radius;
-      const color = `rgba(${Math.random() * 255}, ${Math.random() * 255}, ${Math.random() * 255}, 1)`;
-      const velocity = {
-        x: Math.random() * 4 - 2, // random x velocity between -2 and 2
-        y: Math.random() * 4 - 2, // random y velocity between -2 and 2
-      };
+    function drawWave() {
+      const pixels = ctx.getImageData(0, 0, width, height);
 
-      particles.push(new Particle(x, y, radius, color, velocity));
+      for (let y = 0; y < rows; y++) {
+        for (let x = 0; x < columns; x++) {
+          const pixelIndex = (y * columns + x) * pixelSize;
+
+          const waveHeight = Math.sin(x * waveFrequency) * 50; // Adjust amplitude and frequency as needed
+
+          // Apply wave effect to pixel color
+          const red = pixels.data[pixelIndex];
+          const green = pixels.data[pixelIndex + 1];
+          const blue = pixels.data[pixelIndex + 2];
+
+          pixels.data[pixelIndex] = red + waveHeight;
+          pixels.data[pixelIndex + 1] = green + waveHeight;
+          pixels.data[pixelIndex + 2] = blue + waveHeight;
+        }
+      }
+
+      ctx.putImageData(pixels, 0, 0);
     }
 
     animate();
